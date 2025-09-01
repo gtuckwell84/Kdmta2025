@@ -1,0 +1,1524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head><script type="text/javascript" src="/___vscode_livepreview_injected_script"></script>
+  <meta charset="UTF-8" />
+  <title>Damp & Mould Triage</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --primary-color: #420773;
+      --accent-color: #0078d4;
+      --background-color: #f4f6fa;
+      --card-bg: #ffffff;
+      --badge-emergency: #d32f2f;
+      --badge-urgent: #f57c00;
+      --badge-priority: #fbc02d;
+      --badge-routine: #388e3c;
+      --suggested-bg: #e8f5e9;
+      --suggested-border: #66bb6a;
+      --card-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--background-color);
+      color: #333;
+      margin: 0;
+      padding: 2rem;
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--primary-color);
+      margin-bottom: 2rem;
+      font-size: 2.5rem;
+    }
+
+    h2 {
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 0.5rem;
+      margin-top: 2rem;
+      margin-bottom: 1rem;
+      color: var(--primary-color);
+      font-size: 1.5rem;
+    }
+
+    .rooms-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .room-card {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.room-card:hover {
+  transform: translateY(-4px);
+  border-color: var(--accent-color);
+}
+
+.room-card.selected {
+  border-color: var(--accent-color);
+  background: #e3f2fd;
+}
+
+    .room-icon {
+      font-size: 2rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .room-extra {
+      display: none;
+      margin-top: 1rem;
+      text-align: left;
+      background: #f0f4f8;
+      padding: 1rem;
+      border-radius: 8px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 0.75rem;
+      font-weight: 500;
+    }
+
+    select, input[type="radio"], input[type="checkbox"] {
+      margin-top: 0.3rem;
+      font-size: 1rem;
+    }
+
+    select {
+      width: 100%;
+      padding: 0.5rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    #vulnerableIndividuals {
+      width: 100%; /* Ensure it takes up the full width of the parent */
+  max-width: 1300px; /* Optional: Limit the maximum width */
+  margin: 0 auto; /* Center the container */
+    }
+
+    #vulnerableIndividuals div {
+      margin-bottom: 1rem;
+    }
+
+    #vulnerableIndividuals label {
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    #vulnerableIndividuals div:last-child {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    #vulnerableIndividuals > div {
+      margin-bottom: 1.5rem;
+    }
+
+    textarea {
+      width: 100%;
+      height: 200px;
+      padding: 1rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-family: Arial, sans-serif;
+      font-size: 1rem;
+      margin-top: 0.5rem;
+    }
+
+    .priority-badge {
+      font-size: 3rem; /* Increase font size */
+      padding: 1.5rem 15rem; /* Increase padding */
+      text-align: center;
+      border-radius: 20px; /* Slightly larger border radius */
+      margin: 2rem auto;
+      display: inline-block;
+    }
+
+    .priority-Emergency { background: var(--badge-emergency); color: #fff; }
+    .priority-Urgent { background: var(--badge-urgent); color: #fff; }
+    .priority-Priority { background: var(--badge-priority); color: #000; }
+    .priority-Routine { background: var(--badge-routine); color: #fff; }
+
+    #suggestedAction {
+      background: var(--suggested-bg);
+      border-left: 6px solid var(--suggested-border);
+      padding: 1.5rem;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      margin-top: 1.5rem;
+    }
+
+    #summaryPanel {
+      background: #e3f2fd;
+      border: 1px solid #90caf9;
+      padding: 1.5rem;
+      margin-top: 2rem;
+      border-radius: 12px;
+    }
+
+    #roomSummary {
+      background: #f9f9f9;
+      padding: 1.5rem;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      line-height: 1.5;
+    }
+
+    #roomSummary h3 {
+      color: var(--primary-color);
+      margin-top: 0;
+    }
+
+    #roomSummary h4 {
+      color: var(--primary-color);
+      margin-top: 1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    #roomSummary ul {
+      list-style: disc;
+      margin-left: 1.5rem;
+    }
+
+    #roomSummary li {
+      margin-bottom: 0.5rem;
+    }
+
+    #roomSummary strong {
+      color: var(--accent-color);
+    }
+
+    button {
+      padding: 0.75rem 1.25rem;
+      margin-top: 1rem;
+      background: var(--accent-color);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #005fa3;
+      transform: scale(1.05);
+    }
+
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    input[type="radio"]:checked + label,
+    input[type="checkbox"]:checked + label {
+      font-weight: bold;
+      color: var(--accent-color);
+    }
+
+   
+    /* Floating toggle button */
+#toggleResourceButton {
+  position: right;
+  top: 1.25rem;
+  right: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  z-index: 1100;
+  box-shadow: var(--card-shadow);
+  border-radius: 50px;
+  padding: 0.6rem 1rem;
+}
+
+/* Edit mode styles */
+.editing {
+  background: #fff7e6;
+  border-color: var(--badge-priority);
+}
+
+/* Form elements in sidebar */
+#resourceForm label {
+  font-weight: 500;
+  margin-top: 1rem;
+  display: block;
+}
+
+#resourceForm input[type="text"],
+#resourceForm textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 0.35rem;
+  font: inherit;
+}
+
+/* Search input */
+#resourceSearch {
+  width: 100%;
+  padding: 0.6rem;
+  border: 1px solid #bbb;
+  border-radius: 6px;
+  margin-bottom: 1.25rem;
+  font: inherit;
+}
+
+.conditions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* Four columns */
+  gap: 1.5rem;
+  padding: 1rem;
+}
+
+@media (max-width: 1024px) {
+  .conditions-grid {
+    grid-template-columns: repeat(2, 1fr); /* Two columns for tablets */
+  }
+}
+
+@media (max-width: 600px) {
+  .conditions-grid {
+    grid-template-columns: 1fr; /* Single column for mobile devices */
+  }
+}
+
+.condition-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  box-shadow: var(--card-shadow);
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px solid #ccc;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.condition-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.condition-card strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  color: var(--primary-color);
+}
+
+.condition-card p {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.condition-card label {
+  display: block;
+  margin-top: 1rem;
+  font-weight: 500;
+}
+@media (max-width: 768px) {
+  .conditions-grid {
+    grid-template-columns: repeat(2, 1fr); /* Two columns for tablets */
+  }
+}
+
+@media (max-width: 480px) {
+  .conditions-grid {
+    grid-template-columns: 1fr; /* Single column for mobile devices */
+  }
+}
+
+#addEditResourceSection {
+    background: var(--card-bg);
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+#addEditResourceSection h3 {
+  color: var(--primary-color);
+  margin-top: 0;
+}
+
+#addEditResourceSection form {
+  margin-top: 1rem;
+}
+
+#addEditResourceSection label {
+  font-weight: 500;
+  margin-top: 1rem;
+  display: block;
+}
+
+#addEditResourceSection input[type="text"],
+#addEditResourceSection textarea {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 0.35rem;
+  font: inherit;
+}
+
+/* Header */
+#topBanner {
+  background: linear-gradient(90deg, #420773, #0078d4); /* Gradient background */
+  color: white;
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 4px solid #f4f6fa;
+  position: sticky; /* Make the banner sticky */
+  top: 0; /* Stick to the top of the viewport */
+  z-index: 1100; /* Ensure it stays above other elements */
+}
+
+#topBanner h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  margin: 0;
+  color: white; /* Ensure the text color is white */
+}
+
+#topBanner img {
+  height: 60px;
+}
+
+div {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+div h3 {
+  margin-top: 0;
+  color: var(--primary-color);
+}
+
+#durationContainer {
+  display: none; /* Ensure it is hidden by default */
+}
+
+  /* Improved popup styling */
+  #popupContainer {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    z-index: 1200;
+    max-width: 90%; /* Ensure it fits within the screen */
+    width: 500px; /* Set a reasonable width */
+    overflow-y: auto; /* Enable scrolling for overflow content */
+    max-height: 90%; /* Prevent content from exceeding screen height */
+  }
+
+  #popupContainer h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  #popupContainer label {
+    font-weight: 500;
+    margin-top: 1rem;
+    display: block;
+  }
+
+  #popupContainer select
+  #popupContainer textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    margin-top: 0.35rem;
+    font: inherit;
+  }
+
+  #popupContainer button {
+    margin-top: 1rem;
+    padding: 0.75rem 1.25rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1rem;
+    width: 100%; /* Ensure buttons are visible */
+  }
+
+  #popupSaveButton {
+    background: var(--accent-color);
+    color: white;
+  }
+
+  #popupCancelButton {
+    background: #d32f2f;
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    #popupContainer {
+      width: 95%; /* Adjust width for smaller screens */
+    }
+  }
+
+  #actionsList {
+  display: grid; /* Use grid layout */
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 1.5rem; /* Space between cards */
+  padding: 1rem; /* Optional: Add padding around the grid */
+}
+
+  #actionsList .action-card {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    padding: 1.5rem;
+    border: 2px solid transparent;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  #actionsList .action-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  }
+
+  #actionsList .action-card .priority-badge {
+    display: block; /* Ensure it spans the full width */
+    width: 100%; /* Fit the width of the card */
+    padding: 1rem; /* Adjust padding */
+    border-radius: 8px 8px 0 0; /* Rounded corners at the top */
+    font-size: 1.5rem; /* Larger font size */
+    font-weight: bold; /* Make text bold */
+    color: #fff; /* White text */
+    text-align: center; /* Center text */
+    margin: 0; /* Remove margin */
+  }
+
+  .priority-Emergency { background: var(--badge-emergency); }
+  .priority-Urgent { background: var(--badge-urgent); }
+  .priority-Priority { background: var(--badge-priority); color: #000; }
+  .priority-Routine { background: var(--badge-routine); }
+
+  #actionsList .action-card h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  #actionsList .action-card p {
+    margin: 0.5rem 0;
+    color: #666;
+    font-size: 1rem;
+  }
+
+  #actionsList .action-card .icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--primary-color);
+  }
+
+  /* Floating button for report copying */
+#copyReportButton {
+  position: static; /* Default positioning */
+  margin-top: 1rem; /* Add spacing above the button */
+}
+
+#rulesSection {
+  background: #f9f9f9;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+#rulesContainer {
+  display: none; /* Hidden by default */
+}
+
+#rulesList li {
+  padding: 1rem;
+  border-bottom: 1px solid #ccc;
+}
+
+/* Rule Management Modal */
+#ruleModal {
+  display: none; /* Hidden by default */
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #fff;
+  padding: 1.5rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  z-index: 1200;
+  width: 90%; /* Adjust width dynamically */
+  max-width: 500px; /* Set a maximum width */
+  height: auto; /* Allow height to adjust dynamically */
+  max-height: 90%; /* Prevent content from exceeding screen height */
+  overflow-y: auto; /* Enable scrolling for overflow content */
+}
+
+#ruleModal h3 {
+  text-align: center;
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+/* Modal form elements */
+#ruleModal label {
+  font-weight: 500;
+  margin-top: 1rem;
+  display: block;
+}
+
+#ruleModal select,
+#ruleModal input[type="text"] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  margin-top: 0.35rem;
+  font: inherit;
+}
+
+/* Buttons inside the modal */
+#saveRuleButton {
+  background: var(--accent-color);
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+#cancelRuleButton {
+  background: #d32f2f;
+  color: white;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 768px) {
+  #ruleModal {
+    width: 95%; /* Adjust width for smaller screens */
+    max-height: 95%; /* Ensure it fits within the viewport */
+  }
+}
+
+.edit-icon {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: var(--accent-color);
+  transition: transform 0.3s ease;
+}
+
+.edit-icon:hover {
+  transform: scale(1.2);
+}
+
+.priority-banner {
+  display: block;
+  width: 100%;
+  padding: 1rem;
+  border-radius: 8px 8px 0 0; /* Rounded corners at the top */
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #fff; /* White text */
+  text-align: center;
+  margin: 0; /* Remove margin */
+}
+
+.priority-emergency {
+  background: var(--badge-emergency); /* Red */
+}
+
+.priority-urgent {
+  background: var(--badge-urgent); /* Orange */
+}
+
+.priority-priority {
+  background: var(--badge-priority); /* Yellow */
+  color: #000; /* Black text for better contrast */
+}
+
+.priority-routine {
+  background: var(--badge-routine); /* Green */
+}
+
+/* Trade Card Styling */
+.trade-card {
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 0.75rem; /* Reduced padding */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* Slightly smaller shadow */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  font-size: 0.9rem; /* Adjust font size for compactness */
+}
+
+.trade-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.trade-card h3 {
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+  font-size: 1rem; /* Reduced font size */
+}
+
+.trade-card p {
+  margin: 0.25rem 0; /* Reduced margin */
+  color: #666;
+  font-size: 0.85rem; /* Reduced font size */
+}
+
+.trade-card button {
+  padding: 0.4rem 0.8rem; /* Reduced button padding */
+  border-radius: 6px; /* Slightly smaller border radius */
+  font-size: 0.85rem; /* Reduced font size */
+}
+
+.trade-card button:first-child {
+  background: var(--accent-color);
+  color: white;
+}
+
+.trade-card button:last-child {
+  background: #d32f2f;
+  color: white;
+}
+
+/* Removed empty ruleset for #manageTradesContent */
+
+#tradesDisplay {
+  display: grid; /* Use grid layout */
+  grid-template-columns: repeat(3, 1fr); /* 3 columns */
+  gap: 1.5rem; /* Space between cards */
+  padding: 1rem; /* Optional: Add padding around the grid */
+}
+
+#dampMouldAssistant {
+  /* All your content goes here */
+}
+
+  </style>
+  <script>
+  /* Hardcoded trades array */
+const trades = [
+  {
+    name: "Surveyor",
+    criteria: { rooms: ["bathroom"], scale: ["more_than_4m2"] },
+    priority: "Emergency",
+    active: true,
+    notes: "Handles severe cases with black mould.",
+  },
+  {
+    name: "General Operative",
+    criteria: { rooms: ["kitchen"], scale: ["2_to_4m2"] },
+    priority: "Routine",
+    active: true,
+    notes: "Handles routine cases in the kitchen.",
+  },
+  {
+    name: "Electrician",
+    criteria: { rooms: ["kitchen"], scale: ["2_to_4m2"], fanWorking: ["no"]},
+    priority: "Routine",
+    active: true,
+    notes: "Handles routine cases in the kitchen.",
+  }
+];
+
+/* Collect data from the form inputs */
+function collectTriageData() {
+  return {
+    rooms: Object.keys(loadSelectedRooms()),
+    hasBlackMould: Object.values(loadSelectedRooms()).some((room) => room.mould === "yes"),
+    scaleSevere: Object.values(loadSelectedRooms()).some((room) => room.scale === "more_than_4m2"),
+    fanIssue: Object.values(loadSelectedRooms()).some(
+      (room) => room.fanPresent === "yes" && room.fanWorking === "no"
+    ),
+    vulnerableAge:
+      document.querySelector("#under16years")?.value === "yes" ||
+      document.querySelector("#over65years")?.value === "yes",
+    healthConditions: Array.from(
+      document.querySelectorAll("#vulnerableIndividuals input:checked")
+    ).map((input) => input.name),
+    dampDuration: document.querySelector("#dampDuration")?.value || "unknown",
+  };
+}
+
+/* Check if a trade matches the selected criteria */
+function doesTradeMatchCriteria(trade, triageData) {
+  // Room match: at least one room in criteria is selected
+  const matchesRooms = trade.criteria.rooms.some((room) => triageData.rooms.includes(room));
+  // Scale match: at least one scale in criteria matches the user's selection
+  let matchesScale = false;
+  if (trade.criteria.scale.includes("more_than_4m2") && triageData.scaleSevere) {
+    matchesScale = true;
+  }
+  if (trade.criteria.scale.includes("2_to_4m2") && !triageData.scaleSevere) {
+    matchesScale = true;
+  }
+  // No mould check, since your trades don't use it
+  return matchesRooms && matchesScale;
+}
+
+/* Render the "Actions and Priorities" section */
+function renderTradeCards() {
+  const actionsList = document.getElementById("actionsList");
+  actionsList.innerHTML = ""; // Clear existing cards
+
+  // Collect user-selected criteria
+  const triageData = collectTriageData();
+
+  // Define priority order
+  const priorityOrder = ["Emergency", "Urgent", "Priority", "Routine"];
+
+  // Sort trades by priority
+  const sortedTrades = trades.slice().sort(
+    (a, b) => priorityOrder.indexOf(a.priority) - priorityOrder.indexOf(b.priority)
+  );
+
+  // Filter and render trades based on criteria
+  sortedTrades.forEach((trade) => {
+    if (trade.active && doesTradeMatchCriteria(trade, triageData)) {
+      const card = document.createElement("div");
+      card.className = "action-card";
+      card.id = `${trade.name.toLowerCase().replace(/\s+/g, "")}Card`;
+
+      card.innerHTML = `
+        <div class="priority-banner priority-${trade.priority.toLowerCase()}">
+          ${trade.priority}
+        </div>
+        <h3>${trade.name}</h3>
+        <p><strong>Status:</strong> ${trade.active ? "Active" : "Inactive"}</p>
+        <p><strong>Notes:</strong> ${trade.notes || "No notes provided."}</p>
+      `;
+
+      actionsList.appendChild(card);
+    }
+  });
+}
+
+// Call renderTradeCards whenever relevant fields change
+document.addEventListener("DOMContentLoaded", () => {
+  renderRooms();
+  renderTradeCards();
+  generateReport();
+
+  // Add event listeners for relevant fields
+  [
+    "#reportedLast12Months",
+    "#dampDuration",
+    "#loftSpace",
+    "#under16years",
+    "#over65years",
+    "#additionalNotes"
+  ].forEach(selector => {
+    const el = document.querySelector(selector);
+    if (el) {
+      el.addEventListener("change", generateReport);
+      el.addEventListener("input", generateReport); // For textarea
+    }
+  });
+
+  // Update report when health conditions are checked/unchecked
+  document.querySelectorAll("#vulnerableIndividuals input[type='checkbox']").forEach(el => {
+    el.addEventListener("change", generateReport);
+  });
+});
+document.addEventListener("DOMContentLoaded", () => {
+  const reportedLast12Months = document.getElementById("reportedLast12Months");
+  const dampDuration = document.getElementById("dampDuration");
+  const dampDurationLabel = document.getElementById("dampDurationLabel");
+
+  if (reportedLast12Months) {
+    reportedLast12Months.addEventListener("change", () => {
+      if (reportedLast12Months.value === "no") {
+        dampDuration.disabled = false;
+        dampDurationLabel.style.opacity = "1"; // Make the label fully visible
+      } else {
+        dampDuration.disabled = true;
+        dampDuration.value = ""; // Reset the value
+        dampDurationLabel.style.opacity = "0.5"; // Dim the label
+      }
+    });
+  }
+});
+  </script>
+
+
+</head>
+<body>
+  <!-- Top Banner -->
+<div id="topBanner" style="background: linear-gradient(90deg, #420773, #0078d4); color: white; padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; border-bottom: 4px solid #f4f6fa; position: sticky; top: 0; z-index: 1100;">
+  <h1 style="margin: 0; font-size: 2rem; font-weight: bold;">Damp & Mould Triage Assistant</h1>
+  </div>
+
+  <h2 style="display: flex; align-items: center; gap: 0.5rem; background: #f4f6fa; padding: 1rem; border-radius: 8px; border-left: 6px solid #0078d4;">
+    <span style="font-size: 1.5rem;">🏠</span> Section 1: What Rooms Affected?
+  </h2>
+  <p style="margin-top: 0.5rem; font-size: 1rem; color: #333;">
+    It is important that we understand the areas which are affected by damp and mould this will help us to priorities each case. Please select and complete the questions for each room which has damp and mould. <br><br>“Can you tell me which rooms have damp or mould? Is it a small patch or covering a large area?" <br><br>"Is this a recent problem or something that keeps coming back?”
+  </p>
+  <div class="rooms-grid" id="roomsGrid"></div>
+
+  <!-- Generic Questions -->
+  <div id="genericQuestions" style="margin-top: 2rem; background: #f9f9f9; padding: 1rem; border-radius: 8px;">
+    <h3>Additional Questions</h3>
+    
+    <!-- Question: Has this been reported in the last 12 months? -->
+    <label>Has this been reported in the last 12 months?
+      <select id="reportedLast12Months">
+        <option value="" disabled selected hidden>Select</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+      </select>
+    </label>
+
+    <!-- New Question: How long has the damp and mould been present? -->
+    <label id="dampDurationLabel" style="opacity: 0.5;">How long has the damp and mould been present?
+      <select id="dampDuration" disabled>
+        <option value="" disabled selected hidden>Select duration</option>
+        <option value="less_than_1_month">Less than 1 month</option>
+        <option value="1_to_3_months">1 to 3 months</option>
+        <option value="3_to_6_months">3 to 6 months</option>
+        <option value="6_to_12_months">6 to 12 months</option>
+        <option value="more_than_12_months">More than 12 months</option>
+        <option value="unknown">Unknown</option>
+      </select>
+    </label>
+
+    <!-- Question: Do you have a loft space? -->
+    <label>Do you have a loft space?
+      <select id="loftSpace">
+        <option value="" disabled selected hidden>Select</option>
+        <option value="yes">Yes</option>
+        <option value="no">No</option>
+        <option value="unknown">Unknown</option>
+      </select>
+    </label>
+  </div>
+
+</div>
+  <h2 style="display: flex; align-items: center; gap: 0.5rem; background: #f4f6fa; padding: 1rem; border-radius: 8px; border-left: 6px solid #0078d4;">
+    <span style="font-size: 1.5rem;">👨‍👩‍👧‍👦</span> Section 2: About the Household
+  </h2>
+  <p style="margin-top: 0.5rem; font-size: 1rem; color: #333;">
+    To help us understand how urgent this case might be we need to understand more about the household. <br><br>"Can I ask if anyone in the home has asthma, breathing issues, or other health conditions?" <br><br>"Is there anyone under 16 or over 65 years, or anyone with a long-term illness living there?"
+  </p>
+  <div id="vulnerableIndividuals" class="conditions-grid">
+    <div class="condition-card">
+      <span>🫁</span>
+      <strong>Respiratory Conditions</strong>
+      <p>Asthma, COPD, cystic fibrosis, other chronic lung conditions</p>
+      <label>
+        <input type="checkbox" name="respiratoryCondition" value="yes"> Select
+      </label>
+    </div>
+
+    <div class="condition-card">
+      <span>🩺</span>
+      <strong>Skin Conditions</strong>
+      <p>Such as eczema</p>
+      <label>
+        <input type="checkbox" name="skinCondition" value="yes"> Select
+      </label>
+    </div>
+
+    <div class="condition-card">
+      <span>❤️</span>
+      <strong>Cardiovascular Conditions</strong>
+      <p>Angina, heart failure</p>
+      <label>
+        <input type="checkbox" name="cardiovascularCondition" value="yes"> Select
+      </label>
+    </div>
+
+    <div class="condition-card">
+      <span>🛡️</span>
+      <strong>Immunocompromised</strong>
+      <p>Weakened immune system, undergoing chemotherapy, transplant recipients</p>
+      <label>
+        <input type="checkbox" name="immunocompromised" value="yes"> Select
+      </label>
+    </div>
+
+    <div class="condition-card">
+      <span>🧠</span>
+      <strong>Mental Health Conditions</strong>
+      <p>People living with mental health conditions</p>
+      <label>
+        <input type="checkbox" name="mentalHealthCondition" value="yes"> Select
+      </label>
+    </div>
+
+    <div class="condition-card">
+      <span>🤰</span>
+      <strong>Pregnant Women</strong>
+      <p>Women who are pregnant or recently gave birth</p>
+      <label>
+        <input type="checkbox" name="pregnantWomen" value="yes"> Select
+      </label>
+    </div>
+
+        <div class="condition-card">
+      <span>🛌</span>
+      <strong>Mobility Issues</strong>
+      <p>Bedbound, housebound, or mobility problems</p>
+      <label>
+        <input type="checkbox" name="mobilityIssues" value="yes"> Select
+      </label>
+    </div>
+    </div>
+
+     <!-- Generic Questions -->
+  <div id="genericQuestions" style="margin-top: 2rem; background: #f9f9f9; padding: 1rem; border-radius: 8px;">
+    <h3>Additional Questions</h3>
+
+<!-- Question: Anyone living in the property under the age of 16? -->
+<label for="under16years">Anyone living in the property under the age of 16?</label>
+<select id="under16years" style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px;">
+  <option value="" disabled selected hidden>Select</option>
+  <option value="yes">Yes</option>
+  <option value="no">No</option>
+</select>
+
+<!-- Question: Anyone living in the property over the age of 65? -->
+<label for="over65years">Anyone living in the property over the age of 65?</label>
+<select id="over65years" style="width: 100%; padding: 0.5rem; border: 1px solid #ccc; border-radius: 6px;">
+  <option value="" disabled selected hidden>Select</option>
+  <option value="yes">Yes</option>
+  <option value="no">No</option>
+</select>
+  </div>
+
+  <h2 style="display: flex; align-items: center; gap: 0.5rem; background: #f4f6fa; padding: 1rem; border-radius: 8px; border-left: 6px solid #0078d4;">
+    <span style="font-size: 1.5rem;">📝</span> Section 3: Additional Notes
+  </h2>
+  <p style="margin-top: 0.5rem; font-size: 1rem; color: #333;">
+    Please include any additional notes that you feel is relevant.
+  </p>
+  <div style="background: #fff; padding: 1rem; border-radius: 8px;">
+    <textarea id="additionalNotes" placeholder="Enter any additional notes here..."></textarea>
+  </div>
+
+  
+
+  <!-- Actions and Priorities Section -->
+<div id="actionsWithPriorities" style="margin-top: 2rem; background: #f9f9f9; padding: 1rem; border-radius: 8px;">
+  <h2 style="display: flex; align-items: center; gap: 0.5rem; background: #f4f6fa; padding: 1rem; border-radius: 8px; border-left: 6px solid #0078d4;">
+    <span style="font-size: 1.5rem;">⚡</span> Actions and Priorities
+  </h2>
+<!-- Disclaimer Message -->
+<div style="background: #f8d7da; color: #721c24; padding: 1rem; border-radius: 8px; border: 1px solid #f5c6cb; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+  <span style="font-size: 1.5rem;">❗</span>
+  <strong>Disclaimer:</strong> If you feel the information provided below is not correct, please seek advice.
+</div>
+<div id="actionsList" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+  <p style="color: #666;">Actions and priorities will be displayed here based on the selected criteria.</p>
+</div>
+</div>    
+</body>
+</html>
+
+<!-- Generated Report Section -->
+<div id="generatedReport" style="margin-top: 2rem; background: #f9f9f9; padding: 1rem; border-radius: 8px;">
+  <h2 style="display: flex; align-items: center; gap: 0.5rem; background: #f4f6fa; padding: 1rem; border-radius: 8px; border-left: 6px solid #0078d4;">
+    <span style="font-size: 1.5rem;">📄</span> Damp and Mould Triage Report
+  </h2>
+  <div id="reportContent" style="background: #fff; padding: 1rem; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);">
+    <p style="color: #666;">The report will be generated based on the details captured in Sections 1, 2, and 3.</p>
+  </div>
+  <button id="copyReportButton" style="background: var(--accent-color); color: white; padding: 0.75rem 1.25rem; border-radius: 8px; cursor: pointer;">Copy Report</button>
+  <p id="copyConfirmation" style="display: none; color: green; margin-top: 0.5rem;">Report copied to clipboard!</p>
+</div>
+</div>
+<!-- Rule Management Modal -->
+<div id="ruleModal">
+  <h3>Edit Rule</h3>
+  <label>Trade: <input type="text" id="ruleTrade" readonly></label>
+  <label>Rooms: <select id="ruleRooms" multiple></select></label>
+  <label>Scale: <select id="ruleScale" multiple></select></label>
+  <label>Mould: <select id="ruleMould" multiple></select></label>
+  <label>Priority: <select id="rulePriority">
+    <option value="Emergency">Emergency</option>
+    <option value="Urgent">Urgent</option>
+    <option value="Priority">Priority</option>
+    <option value="Routine">Routine</option>
+  </select></label>
+  <label>Active: <input type="checkbox" id="ruleActive"></label>
+  <label>Notes: <textarea id="ruleNotes"></textarea></label>
+  <button id="saveRuleButton">Save</button>
+  <button id="cancelRuleButton">Cancel</button>
+</div>
+
+<script>
+  let currentRuleIndex = null;
+  const roomsList = [
+  { name: "Living Room", icon: "🛋️" },
+  { name: "Dining Room", icon: "🍽️" },
+  { name: "Kitchen", icon: "🍳" },
+  { name: "Hallway", icon: "🚪" },
+  { name: "Bathroom", icon: "🛁" },
+  { name: "Main Bedroom", icon: "🛏️" },
+  { name: "Bedroom 2", icon: "🛏️" },
+  { name: "Bedroom 3", icon: "🛏️" },
+  { name: "Other Room", icon: "🏠", isOther: true },
+];
+
+  const grid = document.getElementById("roomsGrid");
+
+  // Load selected rooms from localStorage
+function loadSelectedRooms() {
+  const savedRooms = localStorage.getItem("selectedRooms");
+  return savedRooms ? JSON.parse(savedRooms) : {};
+}
+
+// Save selected rooms to localStorage
+function saveSelectedRooms(selectedRooms) {
+  localStorage.setItem("selectedRooms", JSON.stringify(selectedRooms));
+}
+
+// Render the "Rooms Affected" section
+function renderRooms() {
+  const selectedRooms = loadSelectedRooms();
+  grid.innerHTML = ""; // Clear existing cards
+
+  roomsList.forEach(room => {
+    const id = room.name.replace(/\s+/g, "").toLowerCase();
+    const isWetRoom = ["Bathroom", "Kitchen"].includes(room.name);
+
+    const card = document.createElement("div");
+    card.className = "room-card" + (selectedRooms[id]?.checked ? " selected" : "");
+    card.tabIndex = 0; // Make card focusable for accessibility
+
+    card.innerHTML = `
+      <span class="room-icon">${room.icon}</span>
+      <strong>${room.name}</strong>
+      <div id="${id}-extra" class="room-extra" style="display: ${selectedRooms[id]?.checked ? "block" : "none"};">
+        ${room.isOther ? `
+        <label>Select Room Type:
+          <select id="${id}-type">
+            <option value="" disabled selected hidden>Select room type</option>
+            <option value="outhouse" ${selectedRooms[id]?.type === "outhouse" ? "selected" : ""}>Outhouse</option>
+            <option value="downstairsWC" ${selectedRooms[id]?.type === "downstairsWC" ? "selected" : ""}>Downstairs WC</option>
+            <option value="utility" ${selectedRooms[id]?.type === "utility" ? "selected" : ""}>Utility Room</option>
+            <option value="vestibule" ${selectedRooms[id]?.type === "vestibule" ? "selected" : ""}>Vestibule</option>
+            <option value="loft" ${selectedRooms[id]?.type === "loft" ? "selected" : ""}>Loft</option>
+            <option value="garage" ${selectedRooms[id]?.type === "garage" ? "selected" : ""}>Garage</option>
+          </select>
+        </label>` : ""}
+        <label>How big is the area affected?:
+          <select id="${id}-scale">
+            <option value="" disabled selected hidden>Select scale</option>
+            <option value="less_than_0.5m2" ${selectedRooms[id]?.scale === "less_than_0.5m2" ? "selected" : ""}>Less than 0.5m² (e.g. Size of piece of paper)</option>
+            <option value="0.5_to_1m2" ${selectedRooms[id]?.scale === "0.5_to_1m2" ? "selected" : ""}>0.5 – 1m² (e.g. Size of kitchen cupboard)</option>
+            <option value="1_to_2m2" ${selectedRooms[id]?.scale === "1_to_2m2" ? "selected" : ""}>1 – 2m² (e.g. Size of a door)</option>
+            <option value="2_to_4m2" ${selectedRooms[id]?.scale === "2_to_4m2" ? "selected" : ""}>2 – 4m² (e.g. Half a wall)</option>
+            <option value="more_than_4m2" ${selectedRooms[id]?.scale === "more_than_4m2" ? "selected" : ""}>More than 4m² (e.g. Full wall / ceiling or full room)</option>
+          </select>
+        </label>
+        <label>Is Black Mould Present?
+          <select id="${id}-mould">
+            <option value="" disabled selected hidden>Select</option>
+            <option value="no" ${selectedRooms[id]?.mould === "no" ? "selected" : ""}>No</option>
+            <option value="yes" ${selectedRooms[id]?.mould === "yes" ? "selected" : ""}>Yes</option>
+          </select>
+        </label>
+        ${["Living Room", "Dining Room"].includes(room.name) ? `
+        <label>Is this room used as a sleeping area?
+          <select id="${id}-sleeping-area">
+            <option value="" disabled selected hidden>Select</option>
+            <option value="yes" ${selectedRooms[id]?.sleepingArea === "yes" ? "selected" : ""}>Yes</option>
+            <option value="no" ${selectedRooms[id]?.sleepingArea === "no" ? "selected" : ""}>No</option>
+          </select>
+        </label>` : ""}
+        ${isWetRoom ? `
+        <label>Extractor Fan Present?
+          <select id="${id}-fan-present">
+            <option value="no" ${selectedRooms[id]?.fanPresent === "no" ? "selected" : ""}>No</option>
+            <option value="yes" ${selectedRooms[id]?.fanPresent === "yes" ? "selected" : ""}>Yes</option>
+          </select>
+        </label>
+        <div id="${id}-fan-working-container" style="display: ${selectedRooms[id]?.fanPresent === "yes" ? "block" : "none"};">
+          <label>Extractor Fan Working?
+            <select id="${id}-fan-working">
+              <option value="no" ${selectedRooms[id]?.fanWorking === "no" ? "selected" : ""}>No</option>
+              <option value="yes" ${selectedRooms[id]?.fanWorking === "yes" ? "selected" : ""}>Yes</option>
+            </select>
+          </label>
+        </div>` : ""}
+      </div>
+    `;
+
+    const extraSection = card.querySelector(`#${id}-extra`);
+    const fanPresentSelect = card.querySelector(`#${id}-fan-present`);
+    const fanWorkingContainer = card.querySelector(`#${id}-fan-working-container`);
+
+    // Card click toggles selection
+    card.addEventListener("click", (e) => {
+      // Prevent toggling when clicking inside a select or input
+      if (
+        e.target.tagName === "SELECT" ||
+        e.target.tagName === "OPTION" ||
+        e.target.closest("label")
+      ) return;
+
+      const isSelected = !selectedRooms[id]?.checked;
+      selectedRooms[id] = { ...selectedRooms[id], checked: isSelected };
+      card.classList.toggle("selected", isSelected);
+      extraSection.style.display = isSelected ? "block" : "none";
+      saveSelectedRooms(selectedRooms);
+      generateReport();
+      renderTradeCards(); // Add this line
+    });
+
+    // Keyboard accessibility (space/enter toggles)
+    card.addEventListener("keydown", (e) => {
+      if (e.key === " " || e.key === "Enter") {
+        e.preventDefault();
+        card.click();
+      }
+    });
+
+    // Attach to all selects in the extra section
+    card.querySelectorAll("select").forEach(select => {
+      select.addEventListener("change", () => {
+        selectedRooms[id] = {
+          ...selectedRooms[id],
+          type: card.querySelector(`#${id}-type`)?.value || "",
+          scale: card.querySelector(`#${id}-scale`)?.value || "",
+          mould: card.querySelector(`#${id}-mould`)?.value || "",
+          sleepingArea: card.querySelector(`#${id}-sleeping-area`)?.value || "",
+          fanPresent: card.querySelector(`#${id}-fan-present`)?.value || "",
+          fanWorking: card.querySelector(`#${id}-fan-working`)?.value || "",
+        };
+        saveSelectedRooms(selectedRooms);
+        generateReport();
+        renderTradeCards(); // <-- Add this line
+      });
+    });
+
+    if (fanPresentSelect) {
+      fanPresentSelect.addEventListener("change", () => {
+        fanWorkingContainer.style.display = fanPresentSelect.value === "yes" ? "block" : "none";
+        selectedRooms[id] = {
+          ...selectedRooms[id],
+          fanPresent: fanPresentSelect.value,
+          fanWorking: card.querySelector(`#${id}-fan-working`)?.value || "",
+        };
+        saveSelectedRooms(selectedRooms);
+        generateReport();
+      });
+    }
+
+    grid.appendChild(card);
+  });
+}
+
+// Initialize the "Rooms Affected" section
+document.addEventListener("DOMContentLoaded", () => {
+  renderRooms();
+});
+document.addEventListener("DOMContentLoaded", () => {
+  renderTradeCards();
+});
+document.addEventListener("DOMContentLoaded", () => {
+  localStorage.removeItem("selectedRooms"); // Clear saved room selections
+  renderRooms();
+  renderTradeCards();
+  generateReport();
+});
+</script>
+
+<script>
+  function generateReport() {
+  const selectedRooms = loadSelectedRooms();
+  let reportText = `Damp and Mould Triage Report\n============================\n\n`;
+
+  // Room Details Section
+  reportText += `Room Details\n------------------\n`;
+
+  const selectedRoomEntries = Object.entries(selectedRooms).filter(([_, data]) => data.checked);
+  if (selectedRoomEntries.length > 0) {
+    selectedRoomEntries.forEach(([id, data]) => {
+      reportText += `${id.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}\n`;
+      reportText += `  - Room Type: ${data.type ? data.type : "Not specified"}\n`;
+      reportText += `  - Area Affected: ${data.scale ? data.scale.replace(/_/g, " ") : "Not specified"}\n`;
+      reportText += `  - Black Mould Present: ${data.mould ? (data.mould === "yes" ? "Yes" : "No") : "Not specified"}\n`;
+      if (typeof data.sleepingArea !== "undefined")
+        reportText += `  - Used as Sleeping Area: ${data.sleepingArea ? (data.sleepingArea === "yes" ? "Yes" : "No") : "Not specified"}\n`;
+      if (typeof data.fanPresent !== "undefined")
+        reportText += `  - Extractor Fan Present: ${data.fanPresent ? (data.fanPresent === "yes" ? "Yes" : "No") : "Not specified"}\n`;
+      if (data.fanPresent === "yes")
+        reportText += `  - Extractor Fan Working: ${data.fanWorking ? (data.fanWorking === "yes" ? "Yes" : "No") : "Not specified"}\n`;
+      reportText += `\n`;
+    });
+  } else {
+    reportText += `No rooms selected.\n\n`;
+  }
+
+  // Other Details Section
+  reportText += `Other Details\n------------------\n`;
+
+  const reportedLast12Months = document.getElementById("reportedLast12Months")?.value || "";
+  const dampDuration = document.getElementById("dampDuration")?.value || "";
+  const loftSpace = document.getElementById("loftSpace")?.value || "";
+  const under16 = document.getElementById("under16years")?.value || "";
+  const over65 = document.getElementById("over65years")?.value || "";
+
+  reportText += `  - Reported in Last 12 Months: ${reportedLast12Months ? reportedLast12Months.charAt(0).toUpperCase() + reportedLast12Months.slice(1) : "Not specified"}\n`;
+  reportText += `  - Damp & Mould Duration: ${dampDuration ? dampDuration.charAt(0).toUpperCase() + dampDuration.slice(1).replace(/_/g, " ") : "Not specified"}\n`;
+  reportText += `  - Loft Space: ${loftSpace ? loftSpace.charAt(0).toUpperCase() + loftSpace.slice(1) : "Not specified"}\n`;
+  reportText += `  - Anyone under 16: ${under16 ? under16.charAt(0).toUpperCase() + under16.slice(1) : "Not specified"}\n`;
+  reportText += `  - Anyone over 65: ${over65 ? over65.charAt(0).toUpperCase() + over65.slice(1) : "Not specified"}\n\n`;
+
+  // Additional Notes Section
+  const notes = document.getElementById("additionalNotes")?.value || "";
+  reportText += `Additional Notes\n------------------\n`;
+  reportText += `${notes ? notes : "None provided."}\n`;
+
+  // Update the report content in the UI
+  document.getElementById("reportContent").innerText = reportText;
+}
+</script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const copyBtn = document.getElementById("copyReportButton");
+  const confirmation = document.getElementById("copyConfirmation");
+
+  if (copyBtn) {
+    copyBtn.addEventListener("click", () => {
+      const reportContent = document.getElementById("reportContent");
+
+      if (reportContent) {
+        // Extract plain text from the report content
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = reportContent.innerHTML;
+        const text = tempDiv.innerText;
+
+        // Copy the text to the clipboard
+        navigator.clipboard.writeText(text).then(() => {
+          // Show confirmation message
+          confirmation.style.display = "block";
+          setTimeout(() => {
+            confirmation.style.display = "none";
+          }, 2000); // Hide after 2 seconds
+        }).catch(err => {
+          console.error("Failed to copy report:", err);
+        });
+      }
+    });
+  }
+});
+</script>
+
+<div id="dampMouldAssistant">
+  <!-- All your content goes here -->
+</div>
+
+<script>
+  (function () {
+    const LOCAL_STORAGE_KEY = "dampMouldSelectedRooms";
+
+    function loadSelectedRooms() {
+      const savedRooms = localStorage.getItem(LOCAL_STORAGE_KEY);
+      return savedRooms ? JSON.parse(savedRooms) : {};
+    }
+
+    function saveSelectedRooms(selectedRooms) {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(selectedRooms));
+    }
+
+    function renderRooms() {
+      const grid = document.getElementById("dampMould-roomsGrid");
+      const selectedRooms = loadSelectedRooms();
+      grid.innerHTML = ""; // Clear existing cards
+
+      roomsList.forEach(room => {
+        const id = room.name.replace(/\s+/g, "").toLowerCase();
+        const isWetRoom = ["Bathroom", "Kitchen"].includes(room.name);
+
+        const card = document.createElement("div");
+        card.className = "room-card" + (selectedRooms[id]?.checked ? " selected" : "");
+        card.tabIndex = 0; // Make card focusable for accessibility
+
+        card.innerHTML = `
+          <span class="room-icon">${room.icon}</span>
+          <strong>${room.name}</strong>
+          <div id="${id}-extra" class="room-extra" style="display: ${selectedRooms[id]?.checked ? "block" : "none"};">
+            ${room.isOther ? `
+            <label>Select Room Type:
+              <select id="${id}-type">
+                <option value="" disabled selected hidden>Select room type</option>
+                <option value="outhouse" ${selectedRooms[id]?.type === "outhouse" ? "selected" : ""}>Outhouse</option>
+                <option value="downstairsWC" ${selectedRooms[id]?.type === "downstairsWC" ? "selected" : ""}>Downstairs WC</option>
+                <option value="utility" ${selectedRooms[id]?.type === "utility" ? "selected" : ""}>Utility Room</option>
+                <option value="vestibule" ${selectedRooms[id]?.type === "vestibule" ? "selected" : ""}>Vestibule</option>
+                <option value="loft" ${selectedRooms[id]?.type === "loft" ? "selected" : ""}>Loft</option>
+                <option value="garage" ${selectedRooms[id]?.type === "garage" ? "selected" : ""}>Garage</option>
+              </select>
+            </label>` : ""}
+            <label>How big is the area affected?:
+              <select id="${id}-scale">
+                <option value="" disabled selected hidden>Select scale</option>
+                <option value="less_than_0.5m2" ${selectedRooms[id]?.scale === "less_than_0.5m2" ? "selected" : ""}>Less than 0.5m² (e.g. Size of piece of paper)</option>
+                <option value="0.5_to_1m2" ${selectedRooms[id]?.scale === "0.5_to_1m2" ? "selected" : ""}>0.5 – 1m² (e.g. Size of kitchen cupboard)</option>
+                <option value="1_to_2m2" ${selectedRooms[id]?.scale === "1_to_2m2" ? "selected" : ""}>1 – 2m² (e.g. Size of a door)</option>
+                <option value="2_to_4m2" ${selectedRooms[id]?.scale === "2_to_4m2" ? "selected" : ""}>2 – 4m² (e.g. Half a wall)</option>
+                <option value="more_than_4m2" ${selectedRooms[id]?.scale === "more_than_4m2" ? "selected" : ""}>More than 4m² (e.g. Full wall / ceiling or full room)</option>
+              </select>
+            </label>
+            <label>Is Black Mould Present?
+              <select id="${id}-mould">
+                <option value="" disabled selected hidden>Select</option>
+                <option value="no" ${selectedRooms[id]?.mould === "no" ? "selected" : ""}>No</option>
+                <option value="yes" ${selectedRooms[id]?.mould === "yes" ? "selected" : ""}>Yes</option>
+              </select>
+            </label>
+            ${["Living Room", "Dining Room"].includes(room.name) ? `
+            <label>Is this room used as a sleeping area?
+              <select id="${id}-sleeping-area">
+                <option value="" disabled selected hidden>Select</option>
+                <option value="yes" ${selectedRooms[id]?.sleepingArea === "yes" ? "selected" : ""}>Yes</option>
+                <option value="no" ${selectedRooms[id]?.sleepingArea === "no" ? "selected" : ""}>No</option>
+              </select>
+            </label>` : ""}
+            ${isWetRoom ? `
+            <label>Extractor Fan Present?
+              <select id="${id}-fan-present">
+                <option value="no" ${selectedRooms[id]?.fanPresent === "no" ? "selected" : ""}>No</option>
+                <option value="yes" ${selectedRooms[id]?.fanPresent === "yes" ? "selected" : ""}>Yes</option>
+              </select>
+            </label>
+            <div id="${id}-fan-working-container" style="display: ${selectedRooms[id]?.fanPresent === "yes" ? "block" : "none"};">
+              <label>Extractor Fan Working?
+                <select id="${id}-fan-working">
+                  <option value="no" ${selectedRooms[id]?.fanWorking === "no" ? "selected" : ""}>No</option>
+                  <option value="yes" ${selectedRooms[id]?.fanWorking === "yes" ? "selected" : ""}>Yes</option>
+                </select>
+              </label>
+            </div>` : ""}
+          </div>
+        `;
+
+        const extraSection = card.querySelector(`#${id}-extra`);
+        const fanPresentSelect = card.querySelector(`#${id}-fan-present`);
+        const fanWorkingContainer = card.querySelector(`#${id}-fan-working-container`);
+
+        // Card click toggles selection
+        card.addEventListener("click", (e) => {
+          // Prevent toggling when clicking inside a select or input
+          if (
+            e.target.tagName === "SELECT" ||
+            e.target.tagName === "OPTION" ||
+            e.target.closest("label")
+          ) return;
+
+          const isSelected = !selectedRooms[id]?.checked;
+          selectedRooms[id] = { ...selectedRooms[id], checked: isSelected };
+          card.classList.toggle("selected", isSelected);
+          extraSection.style.display = isSelected ? "block" : "none";
+          saveSelectedRooms(selectedRooms);
+          generateReport();
+          renderTradeCards(); // Add this line
+        });
+
+        // Keyboard accessibility (space/enter toggles)
+        card.addEventListener("keydown", (e) => {
+          if (e.key === " " || e.key === "Enter") {
+            e.preventDefault();
+            card.click();
+          }
+        });
+
+        // Attach to all selects in the extra section
+        card.querySelectorAll("select").forEach(select => {
+          select.addEventListener("change", () => {
+            selectedRooms[id] = {
+              ...selectedRooms[id],
+              type: card.querySelector(`#${id}-type`)?.value || "",
+              scale: card.querySelector(`#${id}-scale`)?.value || "",
+              mould: card.querySelector(`#${id}-mould`)?.value || "",
+              sleepingArea: card.querySelector(`#${id}-sleeping-area`)?.value || "",
+              fanPresent: card.querySelector(`#${id}-fan-present`)?.value || "",
+              fanWorking: card.querySelector(`#${id}-fan-working`)?.value || "",
+            };
+            saveSelectedRooms(selectedRooms);
+            generateReport();
+            renderTradeCards(); // <-- Add this line
+          });
+        });
+
+        if (fanPresentSelect) {
+          fanPresentSelect.addEventListener("change", () => {
+            fanWorkingContainer.style.display = fanPresentSelect.value === "yes" ? "block" : "none";
+            selectedRooms[id] = {
+              ...selectedRooms[id],
+              fanPresent: fanPresentSelect.value,
+              fanWorking: card.querySelector(`#${id}-fan-working`)?.value || "",
+            };
+            saveSelectedRooms(selectedRooms);
+            generateReport();
+          });
+        }
+
+        grid.appendChild(card);
+      });
+    }
+
+    function generateReport() {
+      const reportContent = document.getElementById("dampMould-reportContent");
+      let reportText = `Damp and Mould Triage Report\n============================\n\n`;
+
+      // Generate report content...
+      reportContent.innerText = reportText;
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderRooms();
+      generateReport();
+    });
+  })();
+</script>
