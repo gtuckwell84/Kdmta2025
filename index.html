@@ -746,8 +746,8 @@ div h3 {
 const trades = [
   {
     name: "Surveyor",
-    criteria: { rooms: ["living room","bathroom","dining room","kitchen","hallway","bathroom","main bedroom","bedroom 2","bedroom3","otheroom"], 
-               scale: ["less_than_0.5m2", "0.5_to_1m2"],
+    criteria: { rooms: ["living room"], 
+               scale: ["less_than_0.5m2"],
     priority: "Routine",
     active: true,
     notes: "Please issue a repair or a Surveyor to attend on a routine appointment",
@@ -762,8 +762,8 @@ const trades = [
   },
   {
     name: "General Operative",
-    criteria: { rooms: ["living room","bathroom","dining room","kitchen","hallway","bathroom","main bedroom","bedroom 2","bedroom3","otheroom"],
-               scale: ["1_to_2m2", "2_to_4m2","more_than_4m2"],
+    criteria: { rooms: ["bathroom"],
+               scale: ["more_than_4m2"],
               mould:["yes"]
               },
     priority: "Emergency",
