@@ -746,24 +746,36 @@ div h3 {
 const trades = [
   {
     name: "Surveyor",
-    criteria: { rooms: ["bathroom"], scale: ["more_than_4m2"] },
-    priority: "Emergency",
+    criteria: { rooms: ["living room","bathroom","dining room","kitchen","hallway","bathroom","main bedroom","bedroom 2","bedroom3","otheroom"], 
+               scale: ["less_than_0.5m2", "0.5_to_1m2"],
+    priority: "Routine",
     active: true,
+    notes: "Please issue a repair or a Surveyor to attend on a routine appointment",
+  },
+    {
+    name: "Surveyor",
+    criteria: { rooms: ["living room","bathroom","dining room","kitchen","hallway","bathroom","main bedroom","bedroom 2","bedroom3","otheroom"], 
+               scale: ["less_than_0.5m2", "0.5_to_1m2", "1_to_2m2", "2_to_4m2","more_than_4m2"],
+    priority: "Emergency",
+    active: false,
     notes: "Handles severe cases with black mould.",
   },
   {
     name: "General Operative",
-    criteria: { rooms: ["kitchen"], scale: ["2_to_4m2"] },
-    priority: "Routine",
+    criteria: { rooms: ["living room","bathroom","dining room","kitchen","hallway","bathroom","main bedroom","bedroom 2","bedroom3","otheroom"],
+               scale: ["1_to_2m2", "2_to_4m2","more_than_4m2"],
+              mould:["yes"]
+              },
+    priority: "Emergency",
     active: true,
-    notes: "Handles routine cases in the kitchen.",
+    notes: "Looks like large areas of black mould, issue a repair for a General Operative to carry out a Anti Fungal wash",
   },
   {
     name: "Electrician",
-    criteria: { rooms: ["kitchen"], scale: ["2_to_4m2"], fanWorking: ["no"]},
+    criteria: { rooms: ["kitchen","bathroom"], fanWorking: ["no"]},
     priority: "Routine",
     active: true,
-    notes: "Handles routine cases in the kitchen.",
+    notes: "If the extractor fan is not working this may limit the ventaliation in the room.  Issue a repair for an electrian to repair the extractor fan.",
   }
 ];
 
